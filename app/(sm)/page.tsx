@@ -1,17 +1,27 @@
 'use client'
 
 import { Header } from '@/components/header'
+import { Button } from '@/components/ui/button'
 import {
   Disclosure,
   DisclosureContent,
   DisclosureTrigger
 } from '@/components/ui/disclosure'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { Stagger, StaggerSection, StaggerTitle } from '@/components/ui/stagger'
 import { CAREERS } from '@/data/careers'
+import { Moon, Sun } from 'lucide-react'
 import { motion } from 'motion/react'
+import { useTheme } from 'next-themes'
 import Link from 'next/link'
 
-export default async function Page(): Promise<React.ReactElement> {
+export default function Page(): React.ReactElement {
+  const { setTheme } = useTheme()
   return (
     <>
       <Header title="Dongwook Kim" description="Web Frontend Engineer" />
@@ -95,8 +105,28 @@ export default async function Page(): Promise<React.ReactElement> {
         </StaggerSection>
       </Stagger>
 
-      <footer className="mt-24 py-4 border-t border-zinc-100 dark:border-zinc-800">
+      <footer className="mt-24 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
         <span className="text-xs text-zinc-500">© 2025 Dongwook Kim</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setTheme('light')}>
+              Light
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('dark')}>
+              Dark
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('system')}>
+              System
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </footer>
     </>
   )
