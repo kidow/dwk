@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: ReactProps) {
           <div className="fixed inset-0 z-10 pointer-events-none">
             <div className="size-full bg-size-[128px] bg-repeat opacity-[0.06] bg-[url(/noise.png)]" />
           </div>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
