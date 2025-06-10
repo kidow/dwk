@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Stagger, StaggerSection, StaggerTitle } from '@/components/ui/stagger'
-import { CAREERS } from '@/data/careers'
+import { CAREERS } from '@/data'
 import { Moon, Sun } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useTheme } from 'next-themes'

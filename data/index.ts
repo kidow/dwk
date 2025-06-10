@@ -23,3 +23,5 @@ export const CAREERS: Array<{
     description: 'content'
   }
 ]
+
+export const BASE_URL = 'https://dongwook.kim'

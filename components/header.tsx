@@ -15,7 +15,6 @@ interface Props {
 function Header({ title, description }: Props): React.ReactElement {
   const { back, push } = useRouter()
   const pathname = usePathname()
-
   return (
     <header className="mb-8 flex items-center justify-between gap-5">
       <div className="flex flex-col">
