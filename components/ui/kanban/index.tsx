@@ -1,5 +1,13 @@
 'use client'
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
 import { Card } from '@/components/ui/kanban/card'
 import { ScrollArea, ScrollBar } from '@/components/ui/kanban/scroll-area'
 import { cn } from '@/lib/utils'
@@ -119,7 +127,15 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
 
   return (
     <>
-      <div style={style} {...listeners} {...attributes} ref={setNodeRef}>
+      <div
+        style={style}
+        {...listeners}
+        {...attributes}
+        ref={setNodeRef}
+        onClick={() => {
+          console.log('clicked')
+        }}
+      >
         <Card
           className={cn(
             'cursor-grab gap-4 rounded-md p-3 shadow-sm',
@@ -231,7 +247,11 @@ export const KanbanProvider = <
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
 
   const sensors = useSensors(
-    useSensor(MouseSensor),
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 8
+      }
+    }),
     useSensor(TouchSensor),
     useSensor(KeyboardSensor)
   )
@@ -335,13 +355,21 @@ export const KanbanProvider = <
         <div className={cn('flex gap-4 items-start mx-4 mb-4', className)}>
           {columns.map((column) => children(column))}
           <div>
-            <button
-              className="p-2 w-full sm:w-68 shrink-0 mr-4 flex items-center gap-2 border border-transparent hover:border-zinc-200 border-dashed duration-300 hover:bg-secondary rounded-md"
-              onClick={onAddColumn}
-            >
-              <PlusIcon className="size-4" />
-              <span className="font-semibold text-sm">Add column</span>
-            </button>
+            <Dialog>
+              <DialogTrigger className="p-2 w-full sm:w-68 shrink-0 mr-4 flex items-center gap-2 border border-transparent hover:border-zinc-200 border-dashed duration-300 hover:bg-secondary rounded-md">
+                <PlusIcon className="size-4" />
+                <span className="font-semibold text-sm">Add column</span>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit profile</DialogTitle>
+                  <DialogDescription>
+                    Make changes to your profile here. Click save when
+                    you&apos;re done.
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         {typeof window !== 'undefined' &&
