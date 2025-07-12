@@ -78,7 +78,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
   return (
     <div
       className={cn(
-        'flex size-full sm:w-68 shrink-0 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all',
+        'flex size-full sm:w-68 shrink-0 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all mb-40',
         isOver ? 'ring-primary' : 'ring-transparent',
         className
       )}
@@ -151,11 +151,13 @@ export type KanbanCardsProps<T extends KanbanItemProps = KanbanItemProps> =
   Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id'> & {
     children: (item: T) => ReactNode
     id: string
+    onAddCard?: () => void
   }
 
 export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
   children,
   className,
+  onAddCard,
   ...props
 }: KanbanCardsProps<T>) => {
   const { data } = useContext(KanbanContext) as KanbanContextProps<T>
@@ -173,6 +175,13 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
           {...props}
         >
           {filteredData.map(children)}
+          <button
+            className="p-3 flex items-center gap-2 w-full duration-300 hover:bg-primary/5 rounded-md"
+            onClick={onAddCard}
+          >
+            <PlusIcon className="size-4" />
+            <span className="text-sm font-medium">Add card</span>
+          </button>
         </div>
       </SortableContext>
       <ScrollBar orientation="vertical" />
@@ -325,13 +334,15 @@ export const KanbanProvider = <
       >
         <div className={cn('flex gap-4 items-start mx-4 mb-4', className)}>
           {columns.map((column) => children(column))}
-          <button
-            className="p-2 w-full sm:w-68 shrink-0 flex items-center gap-2 border border-transparent hover:border-zinc-200 border-dashed duration-300 hover:bg-secondary rounded-md"
-            onClick={onAddColumn}
-          >
-            <PlusIcon className="size-4" />
-            <span className="font-semibold text-sm">Add column</span>
-          </button>
+          <div>
+            <button
+              className="p-2 w-full sm:w-68 shrink-0 mr-4 flex items-center gap-2 border border-transparent hover:border-zinc-200 border-dashed duration-300 hover:bg-secondary rounded-md"
+              onClick={onAddColumn}
+            >
+              <PlusIcon className="size-4" />
+              <span className="font-semibold text-sm">Add column</span>
+            </button>
+          </div>
         </div>
         {typeof window !== 'undefined' &&
           createPortal(

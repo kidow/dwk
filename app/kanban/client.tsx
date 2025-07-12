@@ -64,8 +64,8 @@ export default function Client({}: Props): React.ReactElement {
             <KanbanBoard id={column.id} key={column.id}>
               <KanbanHeader>
                 <div className="flex items-center gap-2">
-                  <div
-                    className="h-2 w-2 rounded-full"
+                  <button
+                    className="size-2 rounded-full"
                     style={{ backgroundColor: column.color }}
                   />
                   <div className="flex-1">{column.name}</div>
@@ -80,7 +80,23 @@ export default function Client({}: Props): React.ReactElement {
                   </button>
                 </div>
               </KanbanHeader>
-              <KanbanCards<(typeof data)[number]> id={column.id}>
+              <KanbanCards<(typeof data)[number]>
+                id={column.id}
+                onAddCard={() => {
+                  setData([
+                    ...data,
+                    {
+                      id: faker.string.uuid(),
+                      name: capitalize(faker.company.buzzPhrase()),
+                      craetedAt: faker.date.past({
+                        years: 0.5,
+                        refDate: new Date()
+                      }),
+                      column: column.id
+                    }
+                  ])
+                }}
+              >
                 {(item) => (
                   <KanbanCard
                     column={column.id}
