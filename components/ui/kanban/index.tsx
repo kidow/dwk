@@ -23,6 +23,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { PlusIcon } from 'lucide-react'
 import {
   type HTMLAttributes,
   type ReactNode,
@@ -77,7 +78,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
   return (
     <div
       className={cn(
-        'flex size-full sm:w-68 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all',
+        'flex size-full sm:w-68 shrink-0 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all',
         isOver ? 'ring-primary' : 'ring-transparent',
         className
       )}
@@ -126,7 +127,7 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
             className
           )}
         >
-          {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
+          {children ?? <p className="font-medium text-sm">{name}</p>}
         </Card>
       </div>
       {activeCardId === id && (
@@ -138,7 +139,7 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
               className
             )}
           >
-            {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
+            {children ?? <p className="font-medium text-sm">{name}</p>}
           </Card>
         </t.In>
       )}
@@ -183,7 +184,7 @@ export type KanbanHeaderProps = HTMLAttributes<HTMLDivElement>
 
 export const KanbanHeader = ({ className, ...props }: KanbanHeaderProps) => (
   <div
-    className={cn('m-0 p-2 font-semibold text-sm group', className)}
+    className={cn('p-2 font-semibold text-sm group', className)}
     {...props}
   />
 )
@@ -200,6 +201,7 @@ export type KanbanProviderProps<
   onDragStart?: (event: DragStartEvent) => void
   onDragEnd?: (event: DragEndEvent) => void
   onDragOver?: (event: DragOverEvent) => void
+  onAddColumn?: () => void
 }
 
 export const KanbanProvider = <
@@ -214,6 +216,7 @@ export const KanbanProvider = <
   columns,
   data,
   onDataChange,
+  onAddColumn,
   ...props
 }: KanbanProviderProps<T, C>) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
@@ -322,6 +325,13 @@ export const KanbanProvider = <
       >
         <div className={cn('flex gap-4 items-start mx-4 mb-4', className)}>
           {columns.map((column) => children(column))}
+          <button
+            className="p-2 w-full sm:w-68 shrink-0 flex items-center gap-2 border border-transparent hover:border-zinc-200 border-dashed duration-300 hover:bg-secondary rounded-md"
+            onClick={onAddColumn}
+          >
+            <PlusIcon className="size-4" />
+            <span className="font-semibold text-sm">Add column</span>
+          </button>
         </div>
         {typeof window !== 'undefined' &&
           createPortal(

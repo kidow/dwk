@@ -49,7 +49,17 @@ export default function Client({}: Props): React.ReactElement {
         </div>
       </div>
       <div className="flex-1 mt-50 overflow-x-scroll">
-        <KanbanProvider columns={columns} data={data} onDataChange={setData}>
+        <KanbanProvider
+          columns={columns}
+          data={data}
+          onDataChange={setData}
+          onAddColumn={() => {
+            setColumns([
+              ...columns,
+              { id: faker.string.uuid(), name: 'New Column', color: '#6B7280' }
+            ])
+          }}
+        >
           {(column) => (
             <KanbanBoard id={column.id} key={column.id}>
               <KanbanHeader>
@@ -60,33 +70,33 @@ export default function Client({}: Props): React.ReactElement {
                   />
                   <div className="flex-1">{column.name}</div>
                   <button
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="sm:opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => {
                       setData(data.filter((f) => f.column !== column.id))
                       setColumns(columns.filter((c) => c.id !== column.id))
                     }}
                   >
-                    <XIcon className="w-4 h-4" />
+                    <XIcon className="size-4" />
                   </button>
                 </div>
               </KanbanHeader>
-              <KanbanCards id={column.id}>
-                {(feature: (typeof data)[number]) => (
+              <KanbanCards<(typeof data)[number]> id={column.id}>
+                {(item) => (
                   <KanbanCard
                     column={column.id}
-                    id={feature.id}
-                    key={feature.id}
-                    name={feature.name}
+                    id={item.id}
+                    key={item.id}
+                    name={item.name}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col gap-1">
-                        <p className="m-0 flex-1 font-medium text-sm">
-                          {feature.name}
+                        <p className="flex-1 font-medium text-sm">
+                          {item.name}
                         </p>
                       </div>
                     </div>
-                    <p className="m-0 text-muted-foreground text-xs">
-                      {shortDateFormatter.format(feature.craetedAt)}
+                    <p className="text-muted-foreground text-xs">
+                      {shortDateFormatter.format(item.craetedAt)}
                     </p>
                   </KanbanCard>
                 )}
