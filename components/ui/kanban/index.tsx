@@ -1,4 +1,3 @@
-// https://www.kibo-ui.com/components/kanban
 'use client'
 
 import { Card } from '@/components/ui/kanban/card'
@@ -33,10 +32,6 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import tunnel from 'tunnel-rat'
-
-// https://www.kibo-ui.com/components/kanban
-
-// https://www.kibo-ui.com/components/kanban
 
 const t = tunnel()
 
@@ -82,7 +77,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
   return (
     <div
       className={cn(
-        'flex h-full w-68 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all',
+        'flex size-full sm:w-68 flex-col divide-y overflow-hidden rounded-md border bg-secondary text-xs shadow-sm ring-2 transition-all',
         isOver ? 'ring-primary' : 'ring-transparent',
         className
       )}
@@ -187,7 +182,10 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
 export type KanbanHeaderProps = HTMLAttributes<HTMLDivElement>
 
 export const KanbanHeader = ({ className, ...props }: KanbanHeaderProps) => (
-  <div className={cn('m-0 p-2 font-semibold text-sm', className)} {...props} />
+  <div
+    className={cn('m-0 p-2 font-semibold text-sm group', className)}
+    {...props}
+  />
 )
 
 export type KanbanProviderProps<

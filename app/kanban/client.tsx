@@ -9,44 +9,35 @@ import {
   KanbanProvider
 } from '@/components/ui/kanban'
 import { faker } from '@faker-js/faker'
+import { XIcon } from 'lucide-react'
 import { useState } from 'react'
 
 interface Props {}
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
-const columns = [
-  { id: faker.string.uuid(), name: 'Planned', color: '#6B7280' },
-  { id: faker.string.uuid(), name: 'In Progress', color: '#F59E0B' },
-  { id: faker.string.uuid(), name: 'Done', color: '#10B981' }
-]
-const users = Array.from({ length: 4 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: faker.person.fullName(),
-    image: faker.image.avatar()
-  }))
-const exampleFeatures = Array.from({ length: 20 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-    startAt: faker.date.past({ years: 0.5, refDate: new Date() }),
-    endAt: faker.date.future({ years: 0.5, refDate: new Date() }),
-    column: faker.helpers.arrayElement(columns).id
-  }))
-const dateFormatter = new Intl.DateTimeFormat('ko-KR', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric'
-})
 const shortDateFormatter = new Intl.DateTimeFormat('ko-KR', {
   month: 'short',
-  day: 'numeric'
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric'
 })
 
 export default function Client({}: Props): React.ReactElement {
-  const [features, setFeatures] = useState(exampleFeatures)
+  const [columns, setColumns] = useState([
+    { id: faker.string.uuid(), name: 'Planned', color: '#6B7280' },
+    { id: faker.string.uuid(), name: 'In Progress', color: '#F59E0B' },
+    { id: faker.string.uuid(), name: 'Done', color: '#10B981' }
+  ])
+  const [data, setData] = useState(
+    Array.from({ length: 20 })
+      .fill(null)
+      .map(() => ({
+        id: faker.string.uuid(),
+        name: capitalize(faker.company.buzzPhrase()),
+        craetedAt: faker.date.past({ years: 0.5, refDate: new Date() }),
+        column: faker.helpers.arrayElement(columns).id
+      }))
+  )
   return (
     <main className="flex flex-col h-screen">
       <div className="fixed top-0 h-30 pt-20 px-4 z-10 w-full left-0 right-0">
@@ -58,11 +49,7 @@ export default function Client({}: Props): React.ReactElement {
         </div>
       </div>
       <div className="flex-1 mt-50 overflow-x-scroll">
-        <KanbanProvider
-          columns={columns}
-          data={features}
-          onDataChange={setFeatures}
-        >
+        <KanbanProvider columns={columns} data={data} onDataChange={setData}>
           {(column) => (
             <KanbanBoard id={column.id} key={column.id}>
               <KanbanHeader>
@@ -71,11 +58,20 @@ export default function Client({}: Props): React.ReactElement {
                     className="h-2 w-2 rounded-full"
                     style={{ backgroundColor: column.color }}
                   />
-                  <span>{column.name}</span>
+                  <div className="flex-1">{column.name}</div>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => {
+                      setData(data.filter((f) => f.column !== column.id))
+                      setColumns(columns.filter((c) => c.id !== column.id))
+                    }}
+                  >
+                    <XIcon className="w-4 h-4" />
+                  </button>
                 </div>
               </KanbanHeader>
               <KanbanCards id={column.id}>
-                {(feature: (typeof features)[number]) => (
+                {(feature: (typeof data)[number]) => (
                   <KanbanCard
                     column={column.id}
                     id={feature.id}
@@ -90,8 +86,7 @@ export default function Client({}: Props): React.ReactElement {
                       </div>
                     </div>
                     <p className="m-0 text-muted-foreground text-xs">
-                      {shortDateFormatter.format(feature.startAt)} -{' '}
-                      {dateFormatter.format(feature.endAt)}
+                      {shortDateFormatter.format(feature.craetedAt)}
                     </p>
                   </KanbanCard>
                 )}
