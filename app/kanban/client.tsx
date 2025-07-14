@@ -9,8 +9,9 @@ import {
   KanbanProvider
 } from '@/components/ui/kanban'
 import { faker } from '@faker-js/faker'
+import { openDB } from 'idb'
 import { XIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Props {}
 
@@ -38,6 +39,24 @@ export default function Client({}: Props): React.ReactElement {
         column: faker.helpers.arrayElement(columns).id
       }))
   )
+
+  async function get() {
+    // const db = await openDB('kanban', 1, {
+    //   upgrade(db) {
+    //     if (!db.objectStoreNames.contains('columns')) {
+    //       db.createObjectStore('columns', { keyPath: 'id' })
+    //     }
+    //     if (!db.objectStoreNames.contains('cards')) {
+    //       db.createObjectStore('cards', { keyPath: 'id' })
+    //     }
+    //   }
+    // })
+    // console.log('db', db)
+  }
+
+  useEffect(() => {
+    get()
+  }, [])
   return (
     <main className="flex flex-col h-screen">
       <div className="fixed top-0 h-30 pt-20 px-4 z-10 w-full left-0 right-0">

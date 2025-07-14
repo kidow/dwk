@@ -1,15 +1,27 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/kanban/card'
 import { ScrollArea, ScrollBar } from '@/components/ui/kanban/scroll-area'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type {
   Announcements,
@@ -31,6 +43,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusIcon } from 'lucide-react'
 import {
   type HTMLAttributes,
@@ -40,7 +53,9 @@ import {
   useState
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useForm } from 'react-hook-form'
 import tunnel from 'tunnel-rat'
+import { z } from 'zod'
 
 const t = tunnel()
 
@@ -167,8 +182,12 @@ export type KanbanCardsProps<T extends KanbanItemProps = KanbanItemProps> =
   Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id'> & {
     children: (item: T) => ReactNode
     id: string
-    onAddCard?: () => void
+    onAddCard?: (name: string) => void
   }
+
+const cardSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' })
+})
 
 export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
   children,
@@ -179,7 +198,20 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
   const { data } = useContext(KanbanContext) as KanbanContextProps<T>
   const filteredData = data.filter((item) => item.column === props.id)
   const items = filteredData.map((item) => item.id)
+  const [isOpen, setIsOpen] = useState(false)
 
+  const form = useForm<z.infer<typeof cardSchema>>({
+    resolver: zodResolver(cardSchema),
+    defaultValues: {
+      name: ''
+    }
+  })
+
+  function onSubmit(values: z.infer<typeof cardSchema>) {
+    if (onAddCard) onAddCard(values.name)
+    form.reset()
+    setIsOpen(false)
+  }
   return (
     <ScrollArea className="overflow-hidden">
       <SortableContext items={items}>
@@ -191,13 +223,42 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
           {...props}
         >
           {filteredData.map(children)}
-          <button
-            className="p-3 flex items-center gap-2 w-full duration-300 hover:bg-primary/5 rounded-md"
-            onClick={onAddCard}
-          >
-            <PlusIcon className="size-4" />
-            <span className="text-sm font-medium">Add card</span>
-          </button>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger className="p-3 flex items-center gap-2 w-full duration-300 hover:bg-primary/5 rounded-md">
+              <PlusIcon className="size-4" />
+              <span className="text-sm font-medium">Add card</span>
+            </DialogTrigger>
+            <DialogContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-8"
+                >
+                  <DialogHeader>
+                    <DialogTitle>New card</DialogTitle>
+                  </DialogHeader>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Card 1" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Add card</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
       </SortableContext>
       <ScrollBar orientation="vertical" />
@@ -226,8 +287,12 @@ export type KanbanProviderProps<
   onDragStart?: (event: DragStartEvent) => void
   onDragEnd?: (event: DragEndEvent) => void
   onDragOver?: (event: DragOverEvent) => void
-  onAddColumn?: () => void
+  onAddColumn?: (name: string) => void
 }
+
+const columnSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' })
+})
 
 export const KanbanProvider = <
   T extends KanbanItemProps = KanbanItemProps,
@@ -245,6 +310,7 @@ export const KanbanProvider = <
   ...props
 }: KanbanProviderProps<T, C>) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -341,6 +407,18 @@ export const KanbanProvider = <
     }
   }
 
+  const form = useForm<z.infer<typeof columnSchema>>({
+    resolver: zodResolver(columnSchema),
+    defaultValues: {
+      name: ''
+    }
+  })
+
+  function onSubmit(values: z.infer<typeof columnSchema>) {
+    if (onAddColumn) onAddColumn(values.name)
+    form.reset()
+    setIsOpen(false)
+  }
   return (
     <KanbanContext.Provider value={{ columns, data, activeCardId }}>
       <DndContext
@@ -355,19 +433,40 @@ export const KanbanProvider = <
         <div className={cn('flex gap-4 items-start mx-4 mb-4', className)}>
           {columns.map((column) => children(column))}
           <div>
-            <Dialog>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger className="p-2 w-full sm:w-68 shrink-0 mr-4 flex items-center gap-2 border border-transparent hover:border-zinc-200 border-dashed duration-300 hover:bg-secondary rounded-md">
                 <PlusIcon className="size-4" />
                 <span className="font-semibold text-sm">Add column</span>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit profile</DialogTitle>
-                  <DialogDescription>
-                    Make changes to your profile here. Click save when
-                    you&apos;re done.
-                  </DialogDescription>
-                </DialogHeader>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-8"
+                  >
+                    <DialogHeader>
+                      <DialogTitle>New column</DialogTitle>
+                    </DialogHeader>
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Column 1" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button type="submit">Add column</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>
