@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -21,7 +20,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/kanban/card'
 import { ScrollArea, ScrollBar } from '@/components/ui/kanban/scroll-area'
-import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type {
   Announcements,
@@ -44,7 +42,7 @@ import {
 import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PlusIcon } from 'lucide-react'
+import { Loader2Icon, PlusIcon } from 'lucide-react'
 import {
   type HTMLAttributes,
   type ReactNode,
@@ -61,16 +59,9 @@ const t = tunnel()
 
 export type { DragEndEvent } from '@dnd-kit/core'
 
-type KanbanItemProps = {
-  id: string
-  name: string
-  column: string
-} & Record<string, unknown>
+type KanbanItemProps = Kanban.Card
 
-type KanbanColumnProps = {
-  id: string
-  name: string
-} & Record<string, unknown>
+type KanbanColumnProps = Kanban.Column
 
 type KanbanContextProps<
   T extends KanbanItemProps = KanbanItemProps,
@@ -182,7 +173,7 @@ export type KanbanCardsProps<T extends KanbanItemProps = KanbanItemProps> =
   Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id'> & {
     children: (item: T) => ReactNode
     id: string
-    onAddCard?: (name: string) => void
+    onAddCard?: (name: string) => Promise<void>
   }
 
 const cardSchema = z.object({
@@ -196,7 +187,7 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
   ...props
 }: KanbanCardsProps<T>) => {
   const { data } = useContext(KanbanContext) as KanbanContextProps<T>
-  const filteredData = data.filter((item) => item.column === props.id)
+  const filteredData = data.filter((item) => item.columnId === props.id)
   const items = filteredData.map((item) => item.id)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -344,15 +335,15 @@ export const KanbanProvider = <
       return
     }
 
-    const activeColumn = activeItem.column
-    const overColumn = overItem.column
+    const activeColumn = activeItem.columnId
+    const overColumn = overItem.columnId
 
     if (activeColumn !== overColumn) {
       let newData = [...data]
       const activeIndex = newData.findIndex((item) => item.id === active.id)
       const overIndex = newData.findIndex((item) => item.id === over.id)
 
-      newData[activeIndex].column = overColumn
+      newData[activeIndex].columnId = overColumn
       newData = arrayMove(newData, activeIndex, overIndex)
 
       onDataChange?.(newData)
@@ -384,9 +375,10 @@ export const KanbanProvider = <
 
   const announcements: Announcements = {
     onDragStart({ active }) {
-      const { name, column } = data.find((item) => item.id === active.id) ?? {}
+      const { name, columnId } =
+        data.find((item) => item.id === active.id) ?? {}
 
-      return `Picked up the card "${name}" from the "${column}" column`
+      return `Picked up the card "${name}" from the "${columnId}" column`
     },
     onDragOver({ active, over }) {
       const { name } = data.find((item) => item.id === active.id) ?? {}
@@ -463,7 +455,15 @@ export const KanbanProvider = <
                       <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                       </DialogClose>
-                      <Button type="submit">Add column</Button>
+                      <Button
+                        type="submit"
+                        disabled={form.formState.isSubmitting}
+                      >
+                        {form.formState.isSubmitting && (
+                          <Loader2Icon className="size-4 animate-spin" />
+                        )}
+                        Add column
+                      </Button>
                     </DialogFooter>
                   </form>
                 </Form>
